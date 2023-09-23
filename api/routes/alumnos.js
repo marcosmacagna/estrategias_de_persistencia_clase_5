@@ -4,18 +4,20 @@ var models = require("../models");
 
 router.get("/", (req, res) => {
   console.log("Esto es un mensaje para ver en consola");
-  models.notas
+  models.alumnos
     .findAll({
-      attributes: ["id", "primer_parcial", "segundo_parcial", "tp"]
+      attributes: ["id", "nombre", "apellido", "dni", "id_carrera"],
+
+      include:[{as:'carrera', model:models.carrera, attributes: ["id","nombre"]}]
+
     })
-    .then(notas => res.send(notas))
-    .catch(() => res.sendStatus(500));
+    .then(carreras => res.send(carreras)).catch(error => { return next(error)});
 });
 
 router.post("/", (req, res) => {
-  models.notas
-    .create({ primer_parcial: req.body.primer_parcial, segundo_parcial: req.body.segundo_parcial, tp: req.body.tp })
-    .then(notas => res.status(201).send({ id: notas.id }))
+  models.alumnos
+    .create({ nombre: req.body.nombre, apellido: req.body.apellido, dni: req.body.dni, id_carrera: req.body.id_carrera })
+    .then(alumnos => res.status(201).send({ id: alumnos.id }))
     .catch(error => {
       if (error == "SequelizeUniqueConstraintError: Validation error") {
         res.status(400).send('Bad request')
@@ -27,29 +29,29 @@ router.post("/", (req, res) => {
     });
 });
 
-const findNotas = (id, { onSuccess, onNotFound, onError }) => {
-  models.notas
+const findalumnos = (id, { onSuccess, onNotFound, onError }) => {
+  models.alumnos
     .findOne({
-      attributes: ["id", "primer_parcial", "segundo_parcial", "tp"],
+      attributes: ["id", "nombre", "apellido", "dni", "id_carrera"],
       where: { id }
     })
-    .then(notas => (notas ? onSuccess(notas) : onNotFound()))
+    .then(alumnos => (alumnos ? onSuccess(alumnos) : onNotFound()))
     .catch(() => onError());
 };
 
 router.get("/:id", (req, res) => {
-  findNotas(req.params.id, {
-    onSuccess: notas => res.send(notas),
+  findalumnos(req.params.id, {
+    onSuccess: alumnos => res.send(alumnos),
     onNotFound: () => res.sendStatus(404),
     onError: () => res.sendStatus(500)
   });
 });
 
 router.put("/:id", (req, res) => {
-  const onSuccess = notas =>
-    notas
-      .update({ primer_parcial: req.body.primer_parcial, segundo_parcial: req.body.segundo_parcial, tp: req.body.tp }, 
-      { fields: ["primer_parcial", "segundo_parcial", "tp"] })
+  const onSuccess = alumnos =>
+    alumnos
+      .update({ nombre: req.body.nombre, apellido: req.body.apellido, dni: req.body.dni, id_carrera: req.body.id_carrera }, 
+      { fields: ["nombre", "apellido", "dni", "id_carrera"] })
       .then(() => res.sendStatus(200))
       .catch(error => {
         if (error == "SequelizeUniqueConstraintError: Validation error") {
@@ -60,7 +62,7 @@ router.put("/:id", (req, res) => {
           res.sendStatus(500)
         }
       });
-    findNotas(req.params.id, {
+    findalumnos(req.params.id, {
     onSuccess,
     onNotFound: () => res.sendStatus(404),
     onError: () => res.sendStatus(500)
@@ -68,12 +70,12 @@ router.put("/:id", (req, res) => {
 });
 
 router.delete("/:id", (req, res) => {
-  const onSuccess = notas =>
-    notas
+  const onSuccess = alumnos =>
+    alumnos
       .destroy()
       .then(() => res.sendStatus(200))
       .catch(() => res.sendStatus(500));
-  findNotas(req.params.id, {
+  findalumnos(req.params.id, {
     onSuccess,
     onNotFound: () => res.sendStatus(404),
     onError: () => res.sendStatus(500)

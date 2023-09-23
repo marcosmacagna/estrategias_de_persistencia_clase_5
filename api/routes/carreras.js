@@ -6,10 +6,12 @@ router.get("/", (req, res) => {
   console.log("Esto es un mensaje para ver en consola");
   models.carrera
     .findAll({
-      attributes: ["id", "nombre"]
+      attributes: ["id", "nombre"],
+
+      include:[{as:'materias', model:models.materias, attributes: ["id","nombre", "horas_totales", "id_carrera"]}]
+
     })
-    .then(carreras => res.send(carreras))
-    .catch(() => res.sendStatus(500));
+    .then(carreras => res.send(carreras)).catch(error => { return next(error)});
 });
 
 router.post("/", (req, res) => {
