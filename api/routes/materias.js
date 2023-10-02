@@ -8,7 +8,9 @@ router.get("/", (req, res) => {
     .findAll({
       attributes: ["id", "nombre", "horas_totales", "id_carrera"],
 
-      include:[{as:'Carrera-Relacionada', model:models.carrera, attributes: ["id","nombre"]}]
+      include:[{as:'Carrera-Relacionada', model:models.carrera, attributes: ["id","nombre"]}],
+
+      //include:[{as:'profe-materia', model:models.profesor, attributes: ["id","nombre", "apellido", "dni", "id_materia"]}]
 
     })
     .then(materias => res.send(materias)).catch(error => { return next(error)});

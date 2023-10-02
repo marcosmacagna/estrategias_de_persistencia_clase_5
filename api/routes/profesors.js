@@ -6,7 +6,9 @@ router.get("/", (req, res) => {
   console.log("Esto es un mensaje para ver en consola");
   models.profesor
     .findAll({
-      attributes: ["id", "nombre", "apellido", "dni"]
+      attributes: ["id", "nombre", "apellido", "dni", "id_materia"],
+
+      include:[{as:'profe-materia', model:models.materias, attributes: ["id","nombre", "horas_totales", "id_carrera"]}]
     })
     .then(profesors => res.send(profesors))
     .catch(() => res.sendStatus(500));
@@ -14,7 +16,7 @@ router.get("/", (req, res) => {
 
 router.post("/", (req, res) => {
   models.profesor
-    .create({ nombre: req.body.nombre, apellido: req.body.apellido, dni: req.body.dni })
+    .create({ nombre: req.body.nombre, apellido: req.body.apellido, dni: req.body.dni, id_materia: req.body.id_materia })
     .then(profesor => res.status(201).send({ id: profesor.id }))
     .catch(error => {
       if (error == "SequelizeUniqueConstraintError: Validation error") {
@@ -30,7 +32,7 @@ router.post("/", (req, res) => {
 const findProfesor = (id, { onSuccess, onNotFound, onError }) => {
   models.profesor
     .findOne({
-      attributes: ["id", "nombre", "apellido", "dni"],
+      attributes: ["id", "nombre", "apellido", "dni", "id_materia"],
       where: { id }
     })
     .then(profesor => (profesor ? onSuccess(profesor) : onNotFound()))
@@ -48,8 +50,8 @@ router.get("/:id", (req, res) => {
 router.put("/:id", (req, res) => {
   const onSuccess = profesor =>
     profesor
-      .update({ nombre: req.body.nombre, apellido: req.body.apellido, dni: req.body.dni }, 
-      { fields: ["nombre", "apellido", "dni"] })
+      .update({ nombre: req.body.nombre, apellido: req.body.apellido, dni: req.body.dni, id_materia: req.body.id_materia }, 
+      { fields: ["id", "nombre", "apellido", "dni", "id_materia"] })
       .then(() => res.sendStatus(200))
       .catch(error => {
         if (error == "SequelizeUniqueConstraintError: Validation error") {
